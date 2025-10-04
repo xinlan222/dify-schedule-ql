@@ -6,7 +6,7 @@
   脚本兼容: Node.js
   ***********************************************************
  */
-// import notify from "./notify.js";
+import notify from "./utils/notify.js";
 import { WorkflowClient } from "./sdk/dify.js";
 
 const $ = new Env("Dify-定时工作流");
