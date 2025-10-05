@@ -1,101 +1,253 @@
-<section align="center">
-  <a href="https://github.com/leochen-g/dify-schedule" target="_blank">
-    <img src="./static/logo.png" alt="Dify" width="260" />
-  </a>
-</section>
+# Dify 工作流定时调度脚本
 
-<h1 align="center">Dify Workflow Scheduler</h1>
+一个轻量级的 Shell 脚本，用于定时调用 Dify 工作流 API，支持完整的日志记录和错误处理。
 
-<p align="center">Since Dify doesn't have a built-in scheduling feature, executing workflow tasks on a schedule can be challenging. This project leverages GitHub Actions to run workflows daily and send notifications automatically.</p>
+## ✨ 功能特性
 
-[中文文档](./README_CN.md)
-[日本語](./README_JA.md)
+- 🚀 **轻量级**：纯 Shell 脚本，无需额外依赖（除了 curl）
+- 📝 **完整日志**：带时间戳、级别、颜色的日志输出
+- 🔄 **日志轮转**：自动归档超过 10MB 的日志文件
+- ⚙️ **灵活配置**：支持环境变量和 `.env` 配置文件
+- 🛡️ **错误处理**：完善的前置检查和异常处理
+- 📊 **响应保存**：自动保存每次 API 调用的响应
+- 🎨 **友好输出**：终端彩色输出，易于查看
 
-## How to Use?
-There are two ways to use automated workflows: Quick Start (Online) and Private Deployment (Local)
+## 📦 快速开始
 
-- Quick Start Automation: [Read Usage](#usage)
-- Add Task to QingLong Panel: [Read QingLong Panel Usage](#qinglong-panel-usage)
+### 1. 克隆仓库
 
-## Usage
-
-Automated Task Execution: Supports multiple Dify workflows.\
-Automated Runtime: 06:30 AM Beijing Time
-
-1. [Fork Repository](https://github.com/leochen-g/dify-schedule)
-
-2. Repository -> Settings -> Secrets -> New repository secret, add the following Secrets:
-
-   | Name | Value | Required |
-   | --- | --- | --- |
-   | DIFY_BASE_URL | Dify address. For private deployments, ensure public network accessibility. Defaults to https://api.dify.ai/v1 if not set | No |
-   | DIFY_TOKENS | Dify workflow API keys. Required. Supports multiple keys separated by `;` | Yes |
-   | DIFY_INPUTS | Variables required by Dify workflow. If you configured required inputs in Dify, this must be set in JSON format. Use an online JSON validator to verify | No |
-   | EMAIL_USER | Sender's email address (SMTP must be enabled) | No |
-   | EMAIL_PASS | Sender's email password (SMTP password) | No |
-   | EMAIL_TO | Subscriber email addresses (recipients). For multiple subscribers, separate with `, `, e.g.: `a@163.com, b@qq.com` | No |
-   | DINGDING_WEBHOOK | DingTalk robot WEBHOOK | No |
-   | PUSHPLUS_TOKEN | Token from [Pushplus](http://www.pushplus.plus/) for WeChat message push | No |
-   | SERVERPUSHKEY | Key from [ServerChan](https://sct.ftqq.com//) for WeChat message push | No |
-   | WEIXIN_WEBHOOK | WeCom (Enterprise WeChat) robot WEBHOOK | No |
-   | FEISHU_WEBHOOK | Feishu robot WEBHOOK | No |
-   | AIBOTK_KEY | OpenAPI for WeChat sending. Register at [AI Secretary](https://wechat.aibotk.com?r=dBL0Bn&f=difySchedule), get apikey from personal center | No |
-   | AIBOTK_ROOM_RECIVER | Group names for [Wechat Assistant](https://wechat.aibotk.com?r=dBL0Bn&f=difySchedule) messages | No |
-   | AIBOTK_CONTACT_RECIVER | Contact nicknames for [Wechat Assistant](https://wechat.aibotk.com?r=dBL0Bn&f=difySchedule) messages | No |
-
-4. Repository -> Actions, check and enable Workflows.
-
-## Preview
-
-| Dify Workflow Execution - wechat |  Dify Workflow Execution - email |
-|:-----------:|:-----------:|
-| ![Dify Workflow Execution](./static/chat.png) | ![Dify Workflow Execution](./static/chat2.png) |
-
-## QingLong Panel Usage
-
-1. Add subscription in QingLong panel
-
-```shell
-ql repo https://github.com/leochen-g/dify-schedule.git "ql_" "utils" "sdk"
+```bash
+git clone https://github.com/xinlan222/dify-schedule-ql.git
+cd dify-schedule-ql
 ```
 
-2. Add dependency `axios` in Panel Menu -> Dependency Management -> NodeJs
+### 2. 配置环境变量
 
-3. Add environment variables `DIFY_TOKENS` and `DIFY_BASE_URL`
+复制配置文件模板：
 
-In QingLong panel, add environment variables `DIFY_TOKENS` and `DIFY_BASE_URL`. Multiple workflow tokens are supported, separate them with `;` in DIFY_TOKENS
+```bash
+cp .env.example .env
+```
 
-4. Uses QingLong's built-in notifications by default, configure as needed
+编辑 `.env` 文件，填写你的配置：
 
-## FAQ
+```bash
+# Dify API 基础地址
+DIFY_BASE_URL=http://your-dify-domain.com/v1
 
-### How to Get Dify Workflow Token
+# Dify API 端点（工作流应用）
+DIFY_API_ENDPOINT=/workflows/run
 
-Open Dify website
+# Dify 工作流 API Token
+DIFY_TOKEN=app-your-token-here
 
-> Must be a workflow application, other applications are not supported:
+# 工作流输入参数（JSON 格式）
+DIFY_INPUTS={"variable1":"value1"}
 
-<img width="1156" alt="gettoken" src="./static/dify1.png">
-<img width="1156" alt="gettoken" src="./static/dify2.png">
+# 用户标识
+DIFY_USER=root
 
-### Why Can't Access
+# 响应模式（streaming 或 blocking）
+DIFY_RESPONSE_MODE=streaming
+```
 
-If you have a private Dify deployment, ensure it's accessible via public network, otherwise it won't be accessible in GitHub workflows
+### 3. 运行脚本
 
-### Execution Errors
+```bash
+chmod +x dify-schedule.sh
+./dify-schedule.sh
+```
 
-1. First confirm if your application is a workflow application, as only workflow applications are supported
+## 📋 配置说明
 
-2. If there are required variable inputs, configure the `DIFY_INPUTS` environment variable in JSON format. Verify using an online JSON tool before entering
+### 必填配置
 
-3. Carefully read error messages and troubleshoot accordingly, or raise issues with logs (remember to hide sensitive information)
+| 配置项 | 说明 | 示例 |
+|--------|------|------|
+| `DIFY_BASE_URL` | Dify API 基础地址 | `http://dify.example.com/v1` |
+| `DIFY_TOKEN` | 工作流 API Token | `app-xxxxxxxxxx` |
+| `DIFY_INPUTS` | 工作流输入参数（JSON） | `{"emails":"user@example.com"}` |
 
-## Contributing
- 
-You can submit any ideas as [Pull Requests](https://github.com/leochen-g/dify-schedule/pulls) or [GitHub Issues](https://github.com/leochen-g/dify-schedule/issues).
+### 可选配置
 
-## License
+| 配置项 | 说明 | 默认值 |
+|--------|------|--------|
+| `DIFY_API_ENDPOINT` | API 端点路径 | `/workflows/run` |
+| `DIFY_USER` | 用户标识 | `root` |
+| `DIFY_RESPONSE_MODE` | 响应模式 | `streaming` |
 
-[MIT](./LICENSE)
+### 如何获取 Dify Token
 
-[![Powered by DartNode](https://dartnode.com/branding/DN-Open-Source-sm.png)](https://dartnode.com "Powered by DartNode - Free VPS for Open Source")
+1. 登录 Dify 网站
+2. 打开你的工作流应用
+3. 点击右上角「API」按钮
+4. 复制「API 密钥」
+
+## ⏰ 配置定时任务
+
+### Linux/macOS - 使用 crontab
+
+编辑 crontab：
+
+```bash
+crontab -e
+```
+
+添加定时任务（每天早上 6:30 执行）：
+
+```bash
+30 6 * * * /path/to/dify-schedule.sh >> /path/to/logs/cron.log 2>&1
+```
+
+### Windows - 使用任务计划程序
+
+1. 打开「任务计划程序」
+2. 创建基本任务
+3. 触发器：每天 6:30
+4. 操作：启动程序
+   - 程序：`bash.exe`（需要安装 Git Bash 或 WSL）
+   - 参数：`/path/to/dify-schedule.sh`
+
+### 常用 Cron 表达式
+
+```bash
+# 每天早上 6:30
+30 6 * * *
+
+# 每小时执行一次
+0 * * * *
+
+# 每天中午 12:00
+0 12 * * *
+
+# 每周一早上 9:00
+0 9 * * 1
+
+# 每月 1 号凌晨 2:00
+0 2 1 * *
+```
+
+## 📊 日志说明
+
+### 日志文件位置
+
+- **主日志**：`./logs/dify-schedule.log`
+- **响应文件**：`./logs/response_YYYYMMDD_HHMMSS.json`
+
+### 日志格式
+
+```
+[2025-10-05 06:30:00] [INFO] ========== 开始执行 Dify 工作流 ==========
+[2025-10-05 06:30:01] [SUCCESS] 依赖检查通过
+[2025-10-05 06:30:02] [INFO] 发送 API 请求...
+[2025-10-05 06:30:03] [INFO] HTTP 状态码: 200
+[2025-10-05 06:30:03] [SUCCESS] API 调用成功
+[2025-10-05 06:30:03] [SUCCESS] ========== 执行完成 ==========
+```
+
+### 日志级别
+
+- `INFO`：一般信息
+- `SUCCESS`：成功操作
+- `WARN`：警告信息
+- `ERROR`：错误信息
+
+## 🔧 常见问题
+
+### 1. HTTP 308 重定向错误
+
+**问题**：API 调用返回 308 状态码
+
+**原因**：API 地址配置不完整
+
+**解决**：确保 `DIFY_BASE_URL` 和 `DIFY_API_ENDPOINT` 配置正确
+- 基础地址：`http://your-domain.com/v1`
+- 端点路径：`/workflows/run`
+
+### 2. 邮件发送失败（550 Invalid User）
+
+**问题**：Dify 工作流中的邮件节点失败
+
+**原因**：
+- 收件人邮箱地址格式错误
+- SMTP 配置不正确
+
+**解决**：
+1. 检查收件人邮箱地址是否完整（如 `user@163.com`）
+2. 确认 SMTP 服务已开启
+3. 使用授权码而不是登录密码
+
+### 3. curl 命令未找到
+
+**问题**：脚本提示 `curl 命令未找到`
+
+**解决**：安装 curl
+```bash
+# Ubuntu/Debian
+sudo apt-get install curl
+
+# CentOS/RHEL
+sudo yum install curl
+
+# macOS
+brew install curl
+```
+
+### 4. 权限不足
+
+**问题**：脚本无法执行
+
+**解决**：添加执行权限
+```bash
+chmod +x dify-schedule.sh
+```
+
+### 5. 私有化部署无法访问
+
+**问题**：Dify 是私有化部署，外网无法访问
+
+**解决方案**：
+- 在部署 Dify 的服务器上运行脚本
+- 或配置内网穿透（frp、ngrok 等）
+- 或使用 VPN 连接到内网
+
+## 🔍 调试技巧
+
+### 查看详细日志
+
+```bash
+# 实时查看日志
+tail -f logs/dify-schedule.log
+
+# 查看最近 50 行日志
+tail -n 50 logs/dify-schedule.log
+
+# 搜索错误日志
+grep ERROR logs/dify-schedule.log
+```
+
+### 手动测试 API
+
+```bash
+curl -X POST 'http://your-domain.com/v1/workflows/run' \
+  --header 'Authorization: Bearer your-token' \
+  --header 'Content-Type: application/json' \
+  --data-raw '{
+    "inputs": {},
+    "response_mode": "blocking",
+    "user": "test"
+  }'
+```
+
+## 📄 许可证
+
+[MIT License](./LICENSE)
+
+## 🤝 贡献
+
+欢迎提交 Issue 和 Pull Request！
+
+## 📧 联系方式
+
+如有问题，请提交 [GitHub Issue](https://github.com/xinlan222/dify-schedule-ql/issues)
+
